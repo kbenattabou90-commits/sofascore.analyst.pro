@@ -235,7 +235,7 @@
 
             <div class="match-section">
                 <div class="league-header">
-                    <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 الدوري الإنجليزي الممتاز</span>
+                    <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿U+E007Fالدوري الإنجليزي الممتاز</span>
                 </div>
                 
                 <div class="match-row">
