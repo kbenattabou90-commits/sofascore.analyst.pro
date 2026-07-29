@@ -549,4 +549,4 @@ with tab_ai:
       st.write(f"• **Expected Goals (xG) {team_1}:** `2.54`")
       st.write(f"• **Expected Goals (xG) {team_2}:** `1.19`")
     with res_col2:
-      st.info)
+      st.info
