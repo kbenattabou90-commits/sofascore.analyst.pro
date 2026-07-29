@@ -332,6 +332,7 @@ league_scope = st.sidebar.selectbox(
     [
         "🇪🇺 دوري أبطال أوروبا (UEFA Champions League)",
         "🏴󠁧󠁢󠁥󠁮󠁧󠁿 الدوري الإنجليزي الممتاز (Premier League)",
+    
         "🇪🇸 الدوري الإسباني (La Liga)",
         "🇮🇹 الدوري الإيطالي (Serie A)",
         "🇩🇪 الدوري الألماني (Bundesliga)",
