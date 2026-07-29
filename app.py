@@ -353,9 +353,8 @@ st.markdown("""
 # Sidebar Navigation
 st.sidebar.header("⚙️ خيارات النظام")
 app_mode = st.sidebar.selectbox(
-    "اختر القسم:",
-    ("تحليل المباريات الذكي (AI Match Analysis)", "سجل التحليلات السابقة (Database)")
-)
+    "اختر القسم",
+    ("AI Match Analysis", "سجل التحليلات السابقة (Database)"
 
 if app_mode == "تحليل المباريات الذكي (AI Match Analysis)":
     st.sidebar.subheader("إعدادات المباراة")
