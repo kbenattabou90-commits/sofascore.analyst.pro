@@ -348,3 +348,142 @@ elif st.session_state.step == 'analysis':
             time.sleep(1.2)
         st.success("تم جلب أحدث إحصائيات الدقيقة الحالية بنجاح!")
         
+import streamlit as st
+import pandas as pd
+import time
+
+# إعدادات الصفحة الأساسية
+st.set_page_config(
+    page_title="Sofascore Analyst AI - Live Stream",
+    page_icon="⚽",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# تخصيص التصميم عبر CSS لزيادة جمالية شاشة اللايف
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; color: #ffffff; }
+    .stButton>button {
+        width: 100%;
+        background-color: #1f77b4;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .stButton>button:hover { background-color: #2ca02c; }
+    .live-timer {
+        font-size: 28px;
+        font-weight: bold;
+        color: #ff4b4b;
+        text-align: center;
+        background-color: #1e2530;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ff4b4b;
+    }
+    .match-event {
+        background-color: #161b22;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        border-right: 4px solid #1f77b4;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# إدارة الحالة في الذاكرة
+if 'step' not in st.session_state:
+    st.session_state.step = 'welcome'
+if 'selected_match' not in st.session_state:
+    st.session_state.selected_match = None
+
+# قاعدة بيانات المباريات والمنتخبات
+MATCHES_DB = [
+    {"id": 1, "tournament": "🏆 دوري أبطال أوروبا", "home": "ريال مدريد", "home_flag": "👑", "away": "مانشستر سيتي", "away_flag": "🔵", "minute": 74, "second": 12, "score_home": 2, "score_away": 1, "status": "LIVE"},
+    {"id": 2, "tournament": "🏆 دوري أبطال أوروبا", "home": "بايرن ميونخ", "home_flag": "🔴", "away": "باريس سان جيرمان", "away_flag": "🔵🔴", "minute": 38, "second": 45, "score_home": 0, "score_away": 0, "status": "LIVE"},
+    {"id": 3, "tournament": "🌍 كأس العالم للمنتخبات", "home": "البرازيل", "home_flag": "🇧🇷", "away": "الأرجنتين", "away_flag": "🇦🇷", "minute": 0, "second": 0, "score_home": 0, "score_away": 0, "status": "UPCOMING"}
+]
+
+# ================= 1. شاشة الترحيب =================
+if st.session_state.step == 'welcome':
+    st.title("⚽ Sofascore Analyst AI - نظام التتبع المباشر")
+    st.markdown("### تتبع مباريات الأندية والمنتخبات العالمية دقيقة بدقيقة وثانية بثانية مع تحليل الذكاء الاصطناعي.")
+    
+    st.write("---")
+    if st.button("🚀 الدخول إلى لوحة المباريات الحية"):
+        st.session_state.step = 'dashboard'
+        st.rerun()
+
+# ================= 2. لوحة التحكم وقائمة المباريات =================
+elif st.session_state.step == 'dashboard':
+    st.sidebar.title("⚙️ خيارات التصفح")
+    menu = st.sidebar.radio("الأقسام:", ["🔴 المباريات المباشرة والجدول", "⚙️ الإعدادات"])
+    
+    if st.sidebar.button("🚪 العودة للبداية"):
+        st.session_state.step = 'welcome'
+        st.rerun()
+
+    if menu == "🔴 المباريات المباشرة والجدول":
+        st.header("📅 جدول المباريات الحية والمنتخبات العالمية")
+        
+        for m in MATCHES_DB:
+            col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+            with col1:
+                st.markdown(f"**{m['tournament']}**")
+                st.markdown(f"### {m['home_flag']} {m['home']} vs {m['away_flag']} {m['away']}")
+            with col2:
+                if m['status'] == "LIVE":
+                    st.markdown(f"🔴 **LIVE ({m['minute']}:{m['second']:02d})**")
+                    st.markdown(f"**النتيجة: {m['score_home']} - {m['score_away']}**")
+                else:
+                    st.markdown("⏳ **مباراة قادمة**")
+            with col3:
+                st.markdown("⚡ تحديث فوري بالثانية")
+            with col4:
+                if st.button("🔍 فتح شاشة اللايف", key=f"m_{m['id']}"):
+                    st.session_state.selected_match = m
+                    st.session_state.step = 'live_match'
+                    st.rerun()
+            st.divider()
+
+    elif menu == "⚙️ الإعدادات":
+        st.header("إعدادات المنصة المباشرة")
+        st.checkbox("تفعيل التحديث التلقائي للثواني", value=True)
+        st.selectbox("سرعة تحديث البيانات", ["فوري (حقيقي)", "كل 5 ثوانٍ", "كل دقيقة"])
+
+# ================= 3. شاشة المباراة المباشرة (كل دقيقة وكل ثانية) =================
+elif st.session_state.step == 'live_match':
+    m = st.session_state.selected_match
+    
+    if st.button("⬅️ العودة لقائمة المباريات"):
+        st.session_state.step = 'dashboard'
+        st.rerun()
+
+    st.title(f"🔴 تغطية حية: {m['home_flag']} {m['home']} {m['score_home']} - {m['score_away']} {m['away_flag']} {m['away']}")
+    
+    # عداد الزمن المباشر (دقيقة : ثانية)
+    timer_placeholder = st.empty()
+    events_placeholder = st.empty()
+
+    # محاكاة التحديث المباشر للثواني والدقائق
+    if m['status'] == "LIVE":
+        for sec_offset in range(10): # محاكاة 10 تحديثات حية متتالية
+            current_sec = (m['second'] + sec_offset) % 60
+            current_min = m['minute'] + ((m['second'] + sec_offset) // 60)
+            
+            # عرض العداد المباشر
+            timer_placeholder.markdown(f'<div class="live-timer">⏱️ وقت المباراة المباشر: {current_min} : {current_sec:02d} دقيقة</div>', unsafe_allow_html=True)
+            
+            with events_placeholder.container():
+                st.subheader("⚡ أحداث المباراة لحظة بلحظة:")
+                st.markdown(f'<div class="match-event"><b>الدقيقة {current_min}:{current_sec:02d}</b> - استحواذ كامل لصالح نادي {m["home"]} مع ضغط هجومي مكثف.</div>', unsafe_allow_html=True)
+                if current_min >= 75:
+                    st.markdown(f'<div class="match-event" style="border-right-color: #2ca02c;"><b>الدقيقة 75:00</b> - تبديل تكتيكي دخول لاعب خط وسط جديد لتعزيز الدفاع.</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="match-event" style="border-right-color: #ff4b4b;"><b>الدقيقة {max(1, current_min-10)}:15</b> - ركنية لصالح {m["away"]} تم أبعادها بنجاح من دفاع الحارس.</div>', unsafe_allow_html=True)
+            
+            time.sleep(1) # تحديث كل ثانية حقيقية
+    else:
+        st.info("هذه المباراة لم تبدأ بعد، انتظر موعد انطلاقها لتفعيل التتبع بالثانية.")
+        
